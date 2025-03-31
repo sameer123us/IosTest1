@@ -28,4 +28,4 @@ jobs:
         run: xcodebuild clean build -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' CODE_SIGNING_ALLOWED=NO
 
       - name: Run Tests
-        run: xcodebuild test -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
+        run: xcodebuild test -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' CODE_SIGNING_ALLOWED=NO
