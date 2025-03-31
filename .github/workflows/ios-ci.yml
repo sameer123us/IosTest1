@@ -51,7 +51,7 @@ jobs:
   ### ✅ Step 3: Download IPA from Bitrise ###
   download-ipa:
     needs: bitrise-build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Wait for Bitrise Build to Complete
         run: sleep 180  # Adjust based on actual build time
