@@ -1,0 +1,31 @@
+name: iOS CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Xcode
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Install Dependencies
+        run: |
+          brew install cocoapods
+          pod install --project-directory=.
+
+      - name: Build Project
+        run: xcodebuild clean build -workspace Pocket-Contacts-Pro.xcworkspace -scheme Pocket-Contacts-Pro -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
+
+      - name: Run Tests
+        run: xcodebuild test -workspace Pocket-Contacts-Pro.xcworkspace -scheme Pocket-Contacts-Pro -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
