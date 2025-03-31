@@ -25,7 +25,7 @@ jobs:
           pod install --project-directory=.
 
       - name: Build Project
-        run: xcodebuild clean build -workspace Pocket Contacts Pro.xcworkspace -scheme Pocket Contacts Pro -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
+        run: xcodebuild clean build -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
 
       - name: Run Tests
-        run: xcodebuild test -workspace Pocket Contacts Pro.xcworkspace -scheme Pocket Contacts Pro -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
+        run: xcodebuild test -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
