@@ -65,7 +65,7 @@ jobs:
           curl -o "PocketContactsPro.ipa" "$IPA_URL"
 
       - name: Upload IPA as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PocketContactsPro
           path: PocketContactsPro.ipa
