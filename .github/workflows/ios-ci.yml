@@ -27,5 +27,78 @@ jobs:
       - name: Build Project
         run: xcodebuild clean build -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' CODE_SIGNING_ALLOWED=NO
 
-      - name: Run Tests
-        run: xcodebuild test -workspace "Pocket Contacts Pro.xcworkspace" -scheme "Pocket Contacts Pro" -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' CODE_SIGNING_ALLOWED=NO
+  ### ✅ Step 1: Build iOS App on Bitrise ###
+  bitrise-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Bitrise Build
+        run: |
+          curl -X POST "https://api.bitrise.io/v0.1/apps/${{ secrets.BITRISE_APP_SLUG }}/builds" \
+          -H "Authorization: ${{ secrets.BITRISE_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          --data '{
+            "hook_info": { "type": "bitrise" },
+            "build_params": {
+              "branch": "main"
+            }
+          }'
+
+  ### ✅ Step 2: Run Tests on GitHub Actions ###
+  ios-test:
+    needs: bitrise-build
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: pod install
+
+      - name: Run Unit Tests
+        run: |
+          xcodebuild test -workspace MyApp.xcworkspace \
+          -scheme MyApp -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.0'
+
+      - name: Run UI Tests
+        run: |
+          xcodebuild test -workspace MyApp.xcworkspace \
+          -scheme MyAppUITests -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.0'
+
+ 
+  ### ✅ Step 4: Deploy to Firebase for Testing ###
+  deploy-firebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download iOS Build from Bitrise
+        run: |
+          curl -X GET "https://api.bitrise.io/v0.1/apps/${{ secrets.BITRISE_APP_SLUG }}/builds/latest/artifacts" \
+          -H "Authorization: ${{ secrets.BITRISE_API_KEY }}" \
+          -o artifacts.json
+
+          IPA_URL=$(jq -r '.data[] | select(.title | endswith(".ipa")) | .expiring_download_url' artifacts.json)
+          curl -o MyApp.ipa "$IPA_URL"
+
+      - name: Deploy to Firebase App Distribution
+        run: |
+          firebase appdistribution:distribute MyApp.ipa \
+          --app ${{ secrets.FIREBASE_APP_ID }} \
+          --groups testers
+
+  ### ✅ Step 5: Deploy to App Store (Bitrise) ###
+  deploy-appstore:
+    needs: deploy-firebase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Bitrise App Store Deployment
+        run: |
+          curl -X POST "https://api.bitrise.io/v0.1/apps/${{ secrets.BITRISE_APP_SLUG }}/builds" \
+          -H "Authorization: ${{ secrets.BITRISE_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          --data '{
+            "hook_info": { "type": "bitrise" },
+            "build_params": {
+              "workflow_id": "deploy-to-appstore",
+              "branch": "main"
+            }
+          }'
